@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, request
 from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
-
+from bson import ObjectId 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
 # Configura la conexión a MongoDB
-client = MongoClient('mongodb://mi-mongo-container:27017/')
+client = MongoClient('mongodb://localhost:27017/')
 db = client.tecsup  # Nombre de la base de datos en MongoDB
 
 @app.route('/api/login', methods=['POST'])
@@ -21,10 +21,11 @@ def login():
         user = db.usuarios.find_one({'email': email})
 
         if user:
-            return jsonify({'user_id': user['_id']}), 200
+            # Convertir el ObjectId a cadena para incluirlo en la respuesta
+            user_id = str(user['_id'])
+            return jsonify({'user_id': user_id}), 200
 
     return jsonify({'error': 'Credenciales inválidas'}), 401
-
 @app.route('/api/usuarios', methods=['POST'])
 def agregar_usuario():
     if request.method == 'POST':
@@ -62,8 +63,10 @@ def agregar_usuario():
 @app.route('/api/usuarios', methods=['GET'])
 def get_usuarios():
     usuarios = list(db.usuarios.find())
+    # Convierte el ObjectId a cadena para cada usuario
+    for usuario in usuarios:
+        usuario['_id'] = str(usuario['_id'])
     return jsonify(usuarios)
-
 # Ruta para eliminar un usuario por su ID
 @app.route('/api/usuarios/<string:id>', methods=['DELETE'])
 def eliminar_usuario(id):
@@ -74,5 +77,5 @@ def eliminar_usuario(id):
     else:
         return jsonify({'error': 'No se encontró el usuario para eliminar'}), 404
 
-if __name__ == '__main':
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

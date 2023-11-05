@@ -23,7 +23,7 @@ client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri="http://127.0.0.1:4200/callback"
+    redirect_uri="http://ec2-18-224-68-202.us-east-2.compute.amazonaws.com/callback"
 )
 
 @app.route('/')
@@ -36,7 +36,7 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        response = requests.post('http://localhost:5000/api/login', json={'email': email, 'password': password})
+        response = requests.post('http://ec2-18-224-68-202.us-east-2.compute.amazonaws.com/api/login', json={'email': email, 'password': password})
 
         if response.status_code == 200 and 'user_id' in response.json():
             session['user_id'] = response.json()['user_id']
@@ -59,7 +59,7 @@ def callback():
     id_info = id_token.verify_oauth2_token(
         credentials.id_token, google.auth.transport.requests.Request())
 
-    response = requests.post('http://localhost:5000/api/login', json={'email': id_info['email'], 'password': ''})
+    response = requests.post('http://ec2-18-224-68-202.us-east-2.compute.amazonaws.com/api/login', json={'email': id_info['email'], 'password': ''})
 
     if response.status_code == 200:
         user_id = response.json().get('user_id')
@@ -80,7 +80,7 @@ def register():
         telefono = request.form['telefono']
 
         # Realiza una solicitud a la API para registrar un nuevo usuario
-        response = requests.post('http://localhost:5000/api/usuarios', json={
+        response = requests.post('http://ec2-18-224-68-202.us-east-2.compute.amazonaws.com/api/usuarios', json={
             'nombre': nombre,
             'apellidos': apellidos,
             'email': email,
@@ -107,7 +107,7 @@ def menu():
 def usuarios():
     if 'user_id' in session:
         # Realiza una solicitud a la API para obtener la lista de usuarios
-        response = requests.get('http://localhost:5000/api/usuarios')
+        response = requests.get('http://ec2-18-224-68-202.us-east-2.compute.amazonaws.com/api/usuarios')
         if response.status_code == 200:
             usuarios = response.json()
             return render_template('usuarios.html', usuarios=usuarios)
@@ -120,7 +120,7 @@ def usuarios():
 def eliminar_usuario(id):
     if 'user_id' in session:
         # Realiza una solicitud a la API para eliminar un usuario por su ID
-        response = requests.delete(f'http://localhost:5000/api/usuarios/{id}')
+        response = requests.delete(f'http://ec2-18-224-68-202.us-east-2.compute.amazonaws.com/api/usuarios/{id}')
         if response.status_code == 200:
             return redirect('/usuarios')
         else:
@@ -134,4 +134,4 @@ def logout():
     return redirect('/login')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=4200)
+    app.run(debug=True, host='0.0.0.0', port=8000)

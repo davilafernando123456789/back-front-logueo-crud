@@ -6,7 +6,7 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
 # Configura la conexión a MongoDB
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://mi-mongo-container:27017/')
 db = client.tecsup  # Nombre de la base de datos en MongoDB
 
 @app.route('/api/login', methods=['POST'])
@@ -78,4 +78,4 @@ def eliminar_usuario(id):
         return jsonify({'error': 'No se encontró el usuario para eliminar'}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=80, debug=True)
